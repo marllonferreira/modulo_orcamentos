@@ -10,6 +10,7 @@ Este é um módulo de gestão de orçamentos projetado para funcionar de forma *
 
 ### 🛡️ Principais Diferenciais
 - **Blindado contra Atualizações:** Por residir em uma pasta separada (`/modulos`), você pode atualizar o núcleo do Mapos tranquilamente; este módulo **não será sobrescrito ou afetado**.
+- **Instalação Inteligente (Auto Instalador):** Possui sistema de detecção automática que verifica o ambiente e redireciona para um assistente de instalação caso falte alguma tabela ou dependência. Simples e sem complicação.
 - **Design & Experiência:**
     - **Interface Moderna:** Visual otimizado e responsivo, inspirado nos padrões mais recentes.
     - **Temas Independentes:** Sistema próprio de temas, isolado para garantir estabilidade visual.
@@ -80,30 +81,62 @@ Antes de instalar este módulo, você precisa ter o **Mapos** rodando. Se ainda 
 2.  Siga o tutorial de instalação oficial do Mapos.
 3.  Com o Mapos funcionado, prossiga abaixo.
 
-### 1. Instalação do Módulo
+### 1. Preparando o Módulo (No seu computador)
 
 1.  **Baixe o arquivo:** Faça o download do arquivo ZIP do repositório (ex: `modulo_orcamentos-main.zip`).
 2.  **Descompacte:** Extraia o conteúdo do arquivo ZIP.
 3.  **Renomeie a pasta:** A pasta extraída terá o nome `modulo_orcamentos-main`. **Renomeie esta pasta para apenas `orcamentos`.**
     *   ❌ Incorreto: `modulos/modulo_orcamentos-main`
     *   ✅ Correto: `modulos/orcamentos`
-4.  **Mova para o Mapos:**
-    *   Vá até a pasta raiz do seu Mapos.
-    *   Entre na pasta `modulos` (se não existir, crie uma).
-    *   Cole a pasta `orcamentos` lá dentro.
 
-**O caminho final deve ficar exatamente assim:**
-`seusistema / modulos / orcamentos`
+### 2. Resolvendo Dependências (Pasta `vendor`)
 
-### 2. Como Acessar (Importante ⚠️)
-Este módulo é protegido pelo sistema de segurança do Mapos. **Não é possível acessá-lo sem estar logado.**
+Antes de prosseguir, verifique se a pasta `vendor` já existe dentro da pasta `orcamentos`.
+*   **Já existe?** Ótimo, pule para o passo 3.
+*   **Não existe?** Siga uma das opções abaixo:
+
+#### Opção A: Automático (Se você tem Composer)
+Abra o terminal na pasta e rode o comando:
+
+```bash
+composer install
+```
+
+#### Opção B: Direto na Hospedagem (SSH/Terminal)
+Se você tem acesso avançado à sua hospedagem (via SSH ou Terminal do cPanel) e sabe o que está fazendo:
+1.  Faça o upload do módulo para a pasta `modulos/` do seu servidor.
+2.  Acesse o servidor via terminal.
+3.  Entre na pasta: `cd seusistema/modulos/orcamentos`.
+4.  Rode o comando: `composer install`.
+
+#### Opção C: Manual (Sem Composer)
+Se você não tem o composer instalado e nem acesso ao terminal da hospedagem:
+1.  Baixe o **DomPDF** [neste link](https://github.com/dompdf/dompdf/releases) (ex: `dompdf-3.1.4.zip`).
+2.  Descompacte o arquivo. Ele criará uma pasta chamada `dompdf`.
+3.  Dentro da pasta `dompdf`, você verá uma pasta chamada `vendor`. Copie essa pasta `vendor` inteira para dentro da sua pasta `orcamentos`.
+    *   O caminho final deve ser: `orcamentos/vendor/`
+
+> **Dica:** O método automático (Opção A) é sempre preferível para garantir que todas as dependências estejam na versão correta.
+
+### 3. Instalação no Sistema
+
+1.  Pegue a pasta `orcamentos` (já renomeada e com a pasta `vendor` dentro).
+2.  Mova-a para a pasta `modulos` na raiz do seu Mapos. Caso essa pasta não exista, você deve criá-la.  
+    O caminho final deve ser: `seusistema/modulos/orcamentos`.
+
+### 4. Como Acessar (Importante ⚠️)
+
+> [!TIP]
+> **Tudo pronto? Vamos lá!** 🚀
+> 
+> Este módulo é protegido pelo sistema de segurança do Mapos e possui **Auto-Instalação**.
+> Basta tentar acessar a URL abaixo e o sistema fará o resto.
 
 1. Faça **login no Mapos principal** normalmente.
-2. Acesse a URL de instalação para configurar o banco de dados automaticamente:
-   `http://seusistema/modulos/orcamentos/install.php`
-3. Siga as instruções na tela para criar as tabelas e verificar as dependências.
-4. Após concluir, você será redirecionado para a lista de orçamentos.
-5. **Segurança:** Após a instalação, apague o arquivo `install.php` do servidor.
+2. Acesse a lista de orçamentos pela URL:
+   `http://seusistema/modulos/orcamentos/`
+3. Se for o primeiro acesso, o sistema detectará automaticamente a necessidade de instalação e levará você para a tela de configuração.
+4. Siga os passos na tela (se necessário) e pronto!
 
 ## 🛠️ Instalação Manual (Método Alternativo)
 
@@ -113,32 +146,7 @@ Se você preferir fazer tudo manualmente ou se o instalador automático falhar:
 1. Localize o arquivo `instalar_tabelas_orcamento.sql` na raiz desta pasta `orcamentos`.
 2. Importe este arquivo para o banco de dados do seu Mapos.
 
-## 📦 Dependências (PDF)
-
-Este módulo utiliza a biblioteca **DomPDF** para gerar os arquivos PDF. É necessário instalá-la via Composer.
-
-> **⚠️ Importante:** Caso estas dependências não sejam instaladas, **não será possível baixar orçamentos nem relatórios em PDF**. 
-
-### Instalação Automática (Recomendada)
-Este módulo possui seu próprio gerenciador de dependências para garantir isolamento total.
-
-1. Navegue até a pasta do módulo via terminal:
-   `cd seusistema/modulos/orcamentos`
-2. Execute o comando para instalar as dependências locais:
-
-> **⚠️ Atenção:** presisa ter o composer instalado para executar este comando.
-
-```bash
-composer install
-```
-
-Isso criará a pasta `vendor` **dentro do módulo**, garantindo que ele funcione independentemente das bibliotecas do Mapos principal.
-
-### Instalação Manual (Sem Composer)
-Caso não possa usar o Composer, você precisará baixar a biblioteca manualmente:
-1. Baixe o release mais recente em [DomPDF Releases](https://github.com/dompdf/dompdf/releases).
-2. Extraia o conteúdo a pasta `vendor` dentro do módulo `orcamentos`.
-3. devera ficar assim: `seusistema/modulos/orcamentos/vendor`.
+<!-- Seção de dependências movida para o fluxo principal de instalação -->
 
 ## 🔗 Integração no Menu (Opcional)
 
