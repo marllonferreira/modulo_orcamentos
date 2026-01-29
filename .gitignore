@@ -1,3 +1,10 @@
 .DS_Store
 /uploads/*
 !/uploads/index.php
+/vendor/*
+vendor/*
+instalar_clientes_teste_orcamento.sql
+instalar_comandas.sql
+instalar_produtos_orcamento.sql
+instalar_serviços_orcamento.sql
+instalar_dependencias.bat
