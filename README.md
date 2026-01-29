@@ -21,6 +21,7 @@ Este é um módulo de gestão de orçamentos projetado para funcionar de forma *
     - **Impressão Profissional:** Geração de orçamentos e relatórios em PDF (via mPDF) limpos e organizados, com layout profissional, cabeçalho e tabelas zebradas.
     - **Validade:** Campo informativo para definir a validade da proposta em dias.
     - **Notificações:** Alerta visual para orçamentos que atingiram a data limite de validade.
+- **Impressão Inteligente (Jurídico/Fiscal):** Recurso exclusivo que permite selecionar o tipo de orçamento (Venda ou Mão de Obra) na hora de imprimir, ajustando automaticamente os textos legais de isenção e responsabilidade, garantindo maior proteção jurídica ao prestador.
 - **Relatórios Avançados:** Filtros por data, cliente e status, estatísticas e geração de PDF.
 - **Inteligência Artificial:** Integração nativa com **Google Gemini** para sugestão inteligente de preços de mercado.
 - **Integração Total:** Apesar de independente nos arquivos, ele lê e grava diretamente no banco de dados oficial do Mapos (clientes, produtos, serviços), garantindo integridade dos dados.
