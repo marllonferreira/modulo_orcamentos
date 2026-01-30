@@ -3,6 +3,7 @@
 !/uploads/index.php
 /vendor/*
 vendor/*
+orcamentos/config_ia.php
 instalar_clientes_teste_orcamento.sql
 instalar_comandos.sql
 instalar_produtos_orcamento.sql
