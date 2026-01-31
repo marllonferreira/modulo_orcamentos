@@ -1,6 +1,6 @@
 # Módulo de Orçamentos (Independente) - Mapos
 
-![PHP Version](https://img.shields.io/badge/php-%3E%3D8.3-blue?style=flat-square&logo=php)
+![PHP Version](https://img.shields.io/badge/php-%3E%3D8.2-blue?style=flat-square&logo=php)
 ![Mapos Compatible](https://img.shields.io/badge/Mapos-Compatible-green?style=flat-square&logo=codeigniter)
 ![License](https://img.shields.io/badge/license-MIT-orange?style=flat-square)
 ![Status](https://img.shields.io/badge/status-active-success?style=flat-square)
@@ -69,7 +69,7 @@ Este é um módulo de gestão de orçamentos projetado para funcionar de forma *
 ---
 
 ## 💻 Requisitos do Sistema
-- **PHP:** Versão 8.3 ou superior (Requisito do Mapos Core).
+- **PHP:** Versão 8.2 ou superior (Compatível com PHP 8.4/8.5+).
 - **Mapos:** Compatível com a versão mais recente.
 
 ---
@@ -151,22 +151,25 @@ Se você preferir fazer tudo manualmente ou se o instalador automático falhar:
 
 ## 🔗 Integração no Menu (Opcional)
 
-Para facilitar o acesso, você pode adicionar um botão no menu lateral do Mapos.
-**Nota:** Como o menu faz parte do "core" do Mapos, essa alteração pode ser perdida se você atualizar o sistema.
-
-1. Edite o arquivo: `application/views/tema/menu.php`
-2. Procure o local onde quer inserir o botão (ex: abaixo de "Vendas").
-3. Cole o seguinte código:
-
-```php
-<!-- Botão Módulo Orçamentos -->
-<li class="<?= (strpos($_SERVER['REQUEST_URI'], 'modulos/orcamentos') !== false) ? 'active' : '' ?>">
-    <a class="tip-bottom" title="Ir para Módulo de Orçamentos" href="<?= base_url() ?>modulos/orcamentos/listar_orcamentos.php">
-        <i class='bx bx-file-blank iconX'></i>
-        <span class="title">Orçamentos (Módulo)</span>
-    </a>
-</li>
-```
+ Para facilitar o acesso, você pode adicionar um botão no menu lateral do Mapos.
+ **Nota:** Como o menu faz parte do "core" do Mapos, essa alteração pode ser perdida se você atualizar o sistema.
+ 
+- 📖 **Tutorial Detalhado:** Para um passo a passo com dicas de posicionamento, veja o [Guia de Integração Detalhado](TUTORIAL_INTEGRACAO.md).
+ 
+ 1. Edite o arquivo: `application/views/tema/menu.php`
+ 2. Procure o local onde quer inserir o botão (ex: logo abaixo do menu de "Vendas").
+ 3. Cole o seguinte código:
+ 
+ ```php
+ <!-- Botão Módulo Orçamentos (Novo) -->
+ <li class="<?= (strpos($_SERVER['REQUEST_URI'], 'modulos/orcamentos') !== false) ? 'active' : '' ?>">
+     <a class="tip-bottom" title="" href="<?= base_url() ?>modulos/orcamentos">
+         <i class='bx bx-file-blank iconX'></i>
+         <span class="title">Orçamentos (Novo)</span>
+         <span class="title-tooltip">Orçamentos</span>
+     </a>
+ </li>
+ ```
 
 > **⚠️ Atenção:** Como o arquivo `menu.php` pertence ao núcleo do Mapos, ele pode ser sobrescrito em uma atualização do sistema, fazendo o botão sumir. Se isso acontecer, basta refazer este passo.
 
@@ -260,4 +263,4 @@ Este módulo é um software de **Código Aberto (Open Source)**, não comerciali
 - **Sem Suporte (Nem do Mapos Oficial):** Este é um projeto independente. **A equipe oficial do Mapos não oferece suporte a este módulo**, assim como o criador deste módulo também não oferece.
 - **Responsabilidade:** A instalação e uso são de inteira responsabilidade do usuário (conta e risco).
 
-Adaptado para trabalhar com PHP 8.3+. Sinta-se à vontade para colaborar!
+Adaptado para trabalhar com PHP 8.2+. Compatível com as versões mais recentes do PHP 8.x. Sinta-se à vontade para colaborar!
