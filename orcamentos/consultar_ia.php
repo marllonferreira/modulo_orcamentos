@@ -46,8 +46,8 @@ $descricoes = array_map(function ($item, $k) {
         $sufixo = "";
     }
 
-    // Adiciona ID único visível para a IA não agrupar (id_ref)
-    return "ID: " . $item['index'] . " - Item: " . $prefixo . $item['descricao'] . $sufixo;
+    // Adiciona ID único visível para a IA não agrupar
+    return "- Item #" . ($k + 1) . ": " . $prefixo . $item['descricao'] . $sufixo;
 }, $itens, array_keys($itens));
 
 $prompt = "ATUAR COMO: Especialista Senior em Precificação de Materiais e Serviços no Brasil.
@@ -65,9 +65,9 @@ Se houver itens iguais com unidades diferentes (ex: Cabo em M e Cabo em CX), o p
 que o do M.
 
 FORMATO DE RESPOSTA (JSON Puro, sem markdown):
-[{\"id_ref\": 0, \"item\": \"nome do item\", \"preco_sugerido\": 0.00}]
+[{\"item\": \"nome do item\", \"preco_sugerido\": 0.00}]
 
-ITENS PARA PRECIFICAÇÃO (Responda mantendo o id_ref de cada um):
+ITENS PARA PRECIFICAÇÃO:
 " . implode("\n", $descricoes);
 
 $payload = [
