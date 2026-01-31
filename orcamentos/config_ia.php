@@ -5,6 +5,7 @@
 define('GEMINI_API_KEYS', [
 	'AIzaSyD0KJoJP0jO-4-8QdCFv1233nQ522HnxVI', // Chave Principal exemplo
 	'AIzaSyD0KJoJP0jO-4-8QdCFv4321nQ522HnxVI', // Chave secundaria exemplo
+    // 'AIzaSy...Chave3...'
 ]);
 
 // Mantém URL base

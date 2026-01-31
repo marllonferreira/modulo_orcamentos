@@ -1,13 +1,15 @@
 <?php
 require_once 'config_ia.php';
 
+// Evita que avisos do PHP corrompam o JSON no PHP 8.x
+ini_set('display_errors', 0);
 header('Content-Type: application/json');
 
 // Lista de modelos para tentar (ordem de preferência: mais rápido/barato -> mais robusto)
 // IMPORTANTE: A versão atual estável e funcional é a GEMINI 2.5 FLASH. Não alterar para versões anteriores (1.5/2.0) sem testar.
 $modelos = [
-    'gemini-2.5-flash',        // Mais inteligente, prioridade para resolver interpretação de contexto
-    'gemini-2.5-flash-lite',   // Backup mais rápido
+    'gemini-2.5-flash', // Mais inteligente, prioridade para resolver interpretação de contexto
+    'gemini-2.5-flash-lite', // Backup mais rápido
 ];
 
 // Verifica se é uma requisição POST
@@ -44,8 +46,8 @@ $descricoes = array_map(function ($item, $k) {
         $sufixo = "";
     }
 
-    // Adiciona ID único visível para a IA não agrupar
-    return "- Item #" . ($k + 1) . ": " . $prefixo . $item['descricao'] . $sufixo;
+    // Adiciona ID único visível para a IA não agrupar (id_ref)
+    return "ID: " . $item['index'] . " - Item: " . $prefixo . $item['descricao'] . $sufixo;
 }, $itens, array_keys($itens));
 
 $prompt = "ATUAR COMO: Especialista Senior em Precificação de Materiais e Serviços no Brasil.
@@ -59,12 +61,13 @@ A UNIDADE define o preço. Você DEVE diferenciar drasticamente o preço baseand
 - Se a unidade for 'UN' (Unidade): Preço unitário padrão.
 - Se a unidade for 'HR' (Hora): Preço de mão de obra por hora.
 
-Se houver itens iguais com unidades diferentes (ex: Cabo em M e Cabo em CX), o preço da CX deve ser MUITAS VEZES maior que o do M.
+Se houver itens iguais com unidades diferentes (ex: Cabo em M e Cabo em CX), o preço da CX deve ser MUITAS VEZES maior
+que o do M.
 
 FORMATO DE RESPOSTA (JSON Puro, sem markdown):
-[{\"item\": \"nome do item\", \"preco_sugerido\": 0.00}]
+[{\"id_ref\": 0, \"item\": \"nome do item\", \"preco_sugerido\": 0.00}]
 
-ITENS PARA PRECIFICAÇÃO:
+ITENS PARA PRECIFICAÇÃO (Responda mantendo o id_ref de cada um):
 " . implode("\n", $descricoes);
 
 $payload = [
@@ -108,8 +111,12 @@ foreach ($modelos as $modelo) {
         // Timeout curto (15s)
         curl_setopt($ch, CURLOPT_TIMEOUT, 15);
 
+        // Desativa verificação SSL por compatibilidade com ambientes locais (Laragon/Windows)
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+
         $response = curl_exec($ch);
         $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curl_err = curl_error($ch);
         curl_close($ch);
 
         if ($http_code === 200) {
@@ -121,17 +128,23 @@ foreach ($modelos as $modelo) {
             // Continua para a próxima chave (o loop 'foreach $api_keys' segue naturalmente)
         } else {
             // Erro diferente (ex: 400 Bad Request, 500 Server Error)
-            $last_error = "Modelo $modelo / Chave " . ($index + 1) . " falhou ($http_code): $response";
+            $last_error = "Modelo $modelo / Chave " . ($index + 1) . " falhou ($http_code). " . ($curl_err ?: "Resposta: " .
+                (string) $response);
             // Se for erro de modelo inválido, talvez a chave funcione com outro modelo.
-            // Mas se for erro 403 (Permissão), a chave é ruim.
-            // Por segurança, continuamos tentando.
+// Mas se for erro 403 (Permissão), a chave é ruim.
+// Por segurança, continuamos tentando.
         }
     }
 }
 
 if (!$sucesso) {
     if ($last_error === "COTA_EXCEDIDA") {
-        echo json_encode(['success' => false, 'error_code' => 'QUOTA_EXCEEDED', 'message' => 'Limite de consultas da IA atingido. Tente novamente mais tarde.']);
+        echo json_encode([
+            'success' => false,
+            'error_code' => 'QUOTA_EXCEEDED',
+            'message' => 'Limite de consultas da IA
+atingido. Tente novamente mais tarde.'
+        ]);
     } else {
         echo json_encode(['success' => false, 'message' => 'Todos os modelos de IA falharam. Último erro: ' . $last_error]);
     }
@@ -139,11 +152,16 @@ if (!$sucesso) {
 }
 
 // Processamento da resposta (Igual ao anterior)
-$res_data = json_decode($response, true);
+$res_data = json_decode((string) $response, true);
 $raw_text = $res_data['candidates'][0]['content']['parts'][0]['text'] ?? '';
 
-$clean_json = preg_replace('/^```json\s*|```\s*$/', '', trim($raw_text));
-$ia_sugestoes = json_decode($clean_json, true);
+if (empty($raw_text)) {
+    echo json_encode(['success' => false, 'message' => 'IA retornou uma resposta vazia.', 'raw_data' => $res_data]);
+    exit;
+}
+
+$clean_json = preg_replace('/^```json\s*|```\s*$/', '', trim((string) $raw_text));
+$ia_sugestoes = json_decode((string) $clean_json, true);
 
 if (!$ia_sugestoes) {
     echo json_encode(['success' => false, 'message' => 'Falha ao processar resposta da IA.', 'raw' => $raw_text]);

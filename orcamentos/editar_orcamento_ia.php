@@ -2,17 +2,18 @@
 // editar_orcamento_ia.php - VERSÃO COM INTEGRAÇÃO DE IA + BUSCA DE PRODUTOS
 require '../conexao.php';
 
-// Função auxiliar UTF-8
+// Função auxiliar UTF-8 (Compatível com PHP 8.2+)
 function utf8_converter($array)
 {
     if (!is_array($array))
         return [];
     array_walk_recursive($array, function (&$item, $key) {
-        if (function_exists('mb_detect_encoding')) {
-            if (!mb_detect_encoding($item, 'UTF-8', true))
-                $item = utf8_encode($item);
-        } else {
-            $item = utf8_encode($item);
+        if (is_string($item)) {
+            if (function_exists('mb_detect_encoding') && function_exists('mb_convert_encoding')) {
+                if (!mb_detect_encoding($item, 'UTF-8', true)) {
+                    $item = mb_convert_encoding($item, 'UTF-8', 'ISO-8859-1');
+                }
+            }
         }
     });
     return $array;
@@ -840,6 +841,8 @@ switch ($temaAtual) {
         const row = document.createElement('tr');
         row.className = 'item-row';
         row.dataset.type = type; // P=Produto, S=Servico, M=Manual
+        // Adiciona um index temporário para controle da IA se não existir
+        if (item && item.id) row.dataset.index = item.id;        else row.dataset.index = Date.now() + Math.random().toString(36).substr(2, 5);
 
         const desc = item ? item.descricao : '';
         const val = item ? item.preco_unitario : 0;
@@ -886,6 +889,26 @@ switch ($temaAtual) {
 
         row.querySelectorAll('input, select').forEach(el => el.addEventListener('change', updateTotals));
         row.querySelectorAll('input').forEach(el => el.addEventListener('keyup', updateTotals)); // Keyup para calculo real-time
+
+        // Validação de campo vazio no blur (replica comportamento do editar_orcamento.php)
+        const taxaInput = row.querySelector('.item-taxa');
+        taxaInput.addEventListener('blur', function() {
+            if (this.value === '' || isNaN(parseFloat(this.value))) {
+                this.value = '0.00';
+            } else {
+                this.value = parseFloat(this.value).toFixed(2);
+            }
+            updateTotals();
+        });
+
+        const qtdInput = row.querySelector('.item-qtd');
+        qtdInput.addEventListener('blur', function() {
+            if (this.value === '' || parseFloat(this.value) < 1) {
+                this.value = '1';
+            }
+            updateTotals();
+        });
+
         row.querySelector('.btn-remove').addEventListener('click', () => { row.remove(); updateTotals(); });
 
         const btnApply = row.querySelector('.btn-apply-ia');
@@ -995,8 +1018,9 @@ switch ($temaAtual) {
         rows.forEach((r, idx) => {
             const desc = r.querySelector('.item-desc').value;
             const unid = r.querySelector('select[name="unidade[]"]').value; // Captura Unidade atual
+            const idxRow = r.dataset.index; // Usa o index real da row
             if (desc.length > 2) {
-                itensParaIa.push({ index: idx, descricao: desc, unidade: unid });
+                itensParaIa.push({ index: idxRow, descricao: desc, unidade: unid });
                 r.querySelector('.ia-val').innerHTML = '<span class="ia-loading">Consultando...</span>';
             }
         });
@@ -1018,20 +1042,17 @@ switch ($temaAtual) {
             if (data.success) {
                 let sugeriu = false;
                 data.sugestoes.forEach(sug => {
-                    // Match por texto aproximado no Loop das Rows
-                    rows.forEach(r => {
-                        const rDesc = r.querySelector('.item-desc').value.toLowerCase();
-                        const sItem = sug.item.toLowerCase();
-                        if (rDesc.includes(sItem) || sItem.includes(rDesc)) {
-                            const elVal = r.querySelector('.ia-val');
-                            const elBtn = r.querySelector('.btn-apply-ia');
-                            if (elVal) {
-                                elVal.textContent = fmtMoney(sug.preco_sugerido);
-                                if (elBtn) elBtn.style.display = 'inline-block';
-                                sugeriu = true;
-                            }
+                    // Match DIRETO pelo ID DE REFERÊNCIA (Evita confusão por nome similar)
+                    const targetRow = document.querySelector(`.item-row[data-index="${sug.id_ref}"]`);
+                    if (targetRow) {
+                        const elVal = targetRow.querySelector('.ia-val');
+                        const elBtn = targetRow.querySelector('.btn-apply-ia');
+                        if (elVal) {
+                            elVal.textContent = fmtMoney(sug.preco_sugerido);
+                            if (elBtn) elBtn.style.display = 'inline-block';
+                            sugeriu = true;
                         }
-                    });
+                    }
                 });
 
                 if (sugeriu) {
@@ -1111,8 +1132,7 @@ switch ($temaAtual) {
                 quantidade: r.querySelector('.item-qtd').value,
                 taxa: r.querySelector('.item-taxa').value, // Envia Taxa capturada
                 preco: parseMoney(r.querySelector('.item-preco').value),
-                total: parseMoney(r.querySelector('.item-total').value)
-            });
+                total: parseMoney(r.querySelector('.item-total').value)          });
         });
 
         fetch('salvar_orcamento_ia.php', {

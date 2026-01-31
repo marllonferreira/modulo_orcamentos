@@ -4,6 +4,7 @@ header('Content-Type: application/json');
 
 // Ajuste o caminho conforme necessidade.
 // Como este arquivo está em /orcamentos/orcamentos/, o conexao.php está em /orcamentos/
+ini_set('display_errors', 0);
 require '../conexao.php';
 
 $termo = $_GET['termo'] ?? '';
@@ -37,9 +38,11 @@ try {
         $item['id'] = (int) $item['id'];
         $item['preco'] = (float) $item['preco'];
 
-        // Garante UTF-8 se não estiver
-        if (!mb_detect_encoding($item['descricao'], 'UTF-8', true)) {
-            $item['descricao'] = utf8_encode($item['descricao']);
+        // Garante UTF-8 se não estiver (Compatível com PHP 8.2+)
+        if (is_string($item['descricao']) && function_exists('mb_detect_encoding') && function_exists('mb_convert_encoding')) {
+            if (!mb_detect_encoding($item['descricao'], 'UTF-8', true)) {
+                $item['descricao'] = mb_convert_encoding($item['descricao'], 'UTF-8', 'ISO-8859-1');
+            }
         }
     }
 

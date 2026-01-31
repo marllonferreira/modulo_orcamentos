@@ -1,6 +1,7 @@
 <?php
 // salvar_orcamento_ia.php - Módulo isolado para salvar edições feitas via IA
 require '../conexao.php';
+ini_set('display_errors', 0);
 header('Content-Type: application/json');
 
 try {
@@ -23,6 +24,12 @@ try {
     if (empty($input['id']))
         throw new Exception("ID do orçamento não informado.");
 
+    $valor_total = (float) ($input['valor_total'] ?? 0);
+    $validade_dias = (int) ($input['validade_dias'] ?? 10);
+    $status = (string) ($input['status'] ?? 'Rascunho');
+    $observacoes = (string) ($input['observacoes'] ?? '');
+    $anotacoes_internas = (string) ($input['anotacoes_internas'] ?? '');
+
     $pdo->beginTransaction();
 
     // 1. Atualizar Cabeçalho do Orçamento
@@ -39,11 +46,11 @@ try {
 
     $stmt->execute([
         ':id' => $input['id'],
-        ':valor_total' => $input['valor_total'],
-        ':observacoes' => $input['observacoes'] ?? '',
-        ':anotacoes_internas' => $input['anotacoes_internas'] ?? '',
-        ':validade_dias' => $input['validade_dias'] ?? 10,
-        ':status' => $input['status'],
+        ':valor_total' => $valor_total,
+        ':observacoes' => $observacoes,
+        ':anotacoes_internas' => $anotacoes_internas,
+        ':validade_dias' => $validade_dias,
+        ':status' => $status,
         ':data_criacao' => $data_criacao
     ]);
 
