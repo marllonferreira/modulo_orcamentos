@@ -50,4 +50,4 @@ define('MAPOS_URL', $protocol . $host . '/mapos/');
 // ========================================
 
 define('MODULE_NAME', 'Módulo de Orçamentos');
-define('MODULE_VERSION', '1.0.0');
+define('MODULE_VERSION', '1.0.1');
