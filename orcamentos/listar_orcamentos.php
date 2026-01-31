@@ -377,10 +377,10 @@ include '../tema/header.php';
         padding: 4px 10px !important;
     }
 
-    /* Actions */
     /* Actions Buttons - Modern & Colorful */
     .btn-action-view,
-    .btn-action-edit {
+    .btn-action-edit,
+    .btn-action-delete {
         border-radius: 4px;
         padding: 5px 10px;
         color: #fff !important;
@@ -390,6 +390,7 @@ include '../tema/header.php';
         display: inline-flex;
         align-items: center;
         justify-content: center;
+        text-decoration: none !important;
     }
 
     /* Ver Detalhes - Teal / Info Moderno */
@@ -414,9 +415,38 @@ include '../tema/header.php';
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
     }
 
+    /* Excluir - Vibrant Red */
+    .btn-action-delete {
+        background-color: #dc3545;
+    }
+
+    .btn-action-delete:hover:not(.disabled) {
+        background-color: #bb2d3b;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Botão Inativo */
+    .btn-action-delete.disabled {
+        background-color: #e57373 !important; /* Vermelho mais claro/suave */
+        opacity: 0.6;
+        cursor: not-allowed;
+        box-shadow: none;
+        transform: none !important;
+    }
+
+    /* Container de Ações */
+    .actions-group {
+        display: flex;
+        justify-content: center;
+        gap: 6px;
+        flex-wrap: nowrap;
+    }
+
     /* Icons inside buttons */
     .btn-action-view i,
-    .btn-action-edit i {
+    .btn-action-edit i,
+    .btn-action-delete i {
         color: #fff !important;
         margin: 0;
     }
@@ -528,7 +558,7 @@ include '../tema/header.php';
                             <th style="width: 120px;">
                                 <?= getSortLink('status', 'Status', $sort, $dir, $search, $dataInicial, $dataFinal, $statusFiltro) ?>
                             </th>
-                            <th style="width: 100px;">Ação</th>
+                            <th style="width: 130px; text-align: center;">Ações</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -549,14 +579,29 @@ include '../tema/header.php';
                                         <?php echo getStatusBadge($orcamento['status']); ?>
                                     </td>
                                     <td style="text-align:center">
-                                        <a href="ver_detalhes.php?id=<?php echo $orcamento['id']; ?>"
-                                            class="btn btn-action-view tip-top" title="Ver Detalhes">
-                                            <i class="icon-eye-open icon-white"></i>
-                                        </a>
-                                        <a href="editar_orcamento.php?id=<?php echo $orcamento['id']; ?>"
-                                            class="btn btn-action-edit tip-top" title="Editar Orçamento">
-                                            <i class="icon-pencil icon-white"></i>
-                                        </a>
+                                        <div class="actions-group">
+                                            <a href="ver_detalhes.php?id=<?php echo $orcamento['id']; ?>"
+                                                class="btn btn-action-view tip-top" title="Ver Detalhes">
+                                                <i class="icon-eye-open icon-white"></i>
+                                            </a>
+                                            <a href="editar_orcamento.php?id=<?php echo $orcamento['id']; ?>"
+                                                class="btn btn-action-edit tip-top" title="Editar Orçamento">
+                                                <i class="icon-pencil icon-white"></i>
+                                            </a>
+                                            <?php if (strtoupper($orcamento['status']) === 'APROVADO'): ?>
+                                                <a href="javascript:void(0);" 
+                                                    onclick="avisarNaoPodeExcluir()"
+                                                    class="btn btn-action-delete disabled tip-top" title="Orçamentos Aprovados não podem ser excluídos">
+                                                    <i class="icon-trash icon-white"></i>
+                                                </a>
+                                            <?php else: ?>
+                                                <a href="javascript:void(0);" 
+                                                    onclick="confirmarExclusao(<?php echo $orcamento['id']; ?>)"
+                                                    class="btn btn-action-delete tip-top" title="Excluir Orçamento">
+                                                    <i class="icon-trash icon-white"></i>
+                                                </a>
+                                            <?php endif; ?>
+                                        </div>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -576,3 +621,72 @@ include '../tema/header.php';
 </div>
 
 <?php include '../tema/footer.php'; ?>
+
+<!-- SWEETALERT2 PARA CONFIRMAÇÃO MODERNA -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    // Token CSRF da sessão (conforme implementado em conexao.php)
+    const csrfToken = '<?= $_SESSION['csrf_token'] ?>';
+
+    function avisarNaoPodeExcluir() {
+        Swal.fire({
+            title: 'Ação Bloqueada',
+            text: "Um orçamento com status 'Aprovado' já faz parte do histórico financeiro/OS e não pode ser excluído por segurança.",
+            icon: 'info',
+            confirmButtonColor: '#0d6efd',
+            confirmButtonText: 'Entendi'
+        });
+    }
+
+    function confirmarExclusao(id) {
+        Swal.fire({
+            title: 'Excluir Orçamento?',
+            text: "Esta ação é irreversível e removerá todos os itens vinculados!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sim, excluir!',
+            cancelButtonText: 'Cancelar',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                excluirOrcamento(id);
+            }
+        });
+    }
+
+    function excluirOrcamento(id) {
+        fetch('excluir_orcamento.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                id: id,
+                csrf_token: csrfToken
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Excluído!',
+                        text: data.message,
+                        icon: 'success',
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => {
+                        location.reload(); // Recarrega a lista
+                    });
+                } else {
+                    Swal.fire('Erro!', data.message, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                Swal.fire('Erro!', 'Ocorreu um erro de conexão.', 'error');
+            });
+    }
+</script>
