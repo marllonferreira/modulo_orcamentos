@@ -70,7 +70,8 @@ Este é um módulo de gestão de orçamentos projetado para funcionar de forma *
 
 ## 💻 Requisitos do Sistema
 - **PHP:** Versão 8.2 ou superior (Compatível com PHP 8.4/8.5+).
-- **Mapos:** Compatível com a versão mais recente.
+- **Mapos:** Compatível a partir da versão **v4.49.0**. Testado e validado até a versão **v4.53.0** (atual). Devido à sua arquitetura independente, é altamente provável que mantenha compatibilidade com versões futuras.
+- **Versões Antigas:** O uso em versões inferiores é possível, mas pode exigir adaptações manuais no núcleo e no ambiente PHP (mínimo 8.2), sendo de inteira responsabilidade do usuário.
 
 ---
 
