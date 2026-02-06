@@ -28,7 +28,7 @@ if (!isset($data['itens']) || !is_array($data['itens'])) {
 }
 
 $itens = $data['itens'];
-$descricoes = array_map(function ($item, $k) {
+$descricoes = array_map(function ($item) {
     $u = strtoupper($item['unidade'] ?? '');
 
     // Prefixo Forçado para quebrar o padrão visual do início da string para a IA
@@ -47,8 +47,8 @@ $descricoes = array_map(function ($item, $k) {
     }
 
     // Adiciona ID único visível para a IA não agrupar
-    return "- Item #" . ($k + 1) . ": " . $prefixo . $item['descricao'] . $sufixo;
-}, $itens, array_keys($itens));
+    return "- Item #" . $item['index'] . ": " . $prefixo . $item['descricao'] . $sufixo;
+}, $itens);
 
 $prompt = "ATUAR COMO: Especialista Senior em Precificação de Materiais e Serviços no Brasil.
 
@@ -61,11 +61,12 @@ A UNIDADE define o preço. Você DEVE diferenciar drasticamente o preço baseand
 - Se a unidade for 'UN' (Unidade): Preço unitário padrão.
 - Se a unidade for 'HR' (Hora): Preço de mão de obra por hora.
 
-Se houver itens iguais com unidades diferentes (ex: Cabo em M e Cabo em CX), o preço da CX deve ser MUITAS VEZES maior
-que o do M.
+Se houver itens iguais com unidades diferentes (ex: Cabo em M e Cabo em CX), o preço da CX deve ser MUITAS VEZES maior que o do M.
+
+VOCÊ DEVE MANTER O IDENTIFICADOR NUMÉRICO (id_ref) DE CADA ITEM NA RESPOSTA.
 
 FORMATO DE RESPOSTA (JSON Puro, sem markdown):
-[{\"item\": \"nome do item\", \"preco_sugerido\": 0.00}]
+[{\"id_ref\": 1, \"item\": \"nome do item\", \"preco_sugerido\": 0.00}]
 
 ITENS PARA PRECIFICAÇÃO:
 " . implode("\n", $descricoes);
