@@ -125,7 +125,33 @@ Se você não tem o composer instalado e nem acesso ao terminal da hospedagem:
 2.  Mova-a para a pasta `modulos` na raiz do seu Mapos. Caso essa pasta não exista, você deve criá-la.  
     O caminho final deve ser: `seusistema/modulos/orcamentos`.
 
-### 4. Como Acessar (Importante ⚠️)
+### 4. Configuração de URL (Importante ⚙️)
+
+O arquivo principal de configuração é o `config_geral.php`. Ele tenta detectar automaticamente a maioria dos caminhos, mas **atenção especial** deve ser dada à URL raiz do sistema.
+
+#### Renomeando a Pasta do Projeto
+
+Se você alterar o nome da pasta principal do projeto (ex: de `mapos` para `os`), você precisa ajustar a constante `MAPOS_URL` no arquivo `config_geral.php`.
+
+**Arquivo:** `config_geral.php`
+
+```php
+// ...
+
+// 🛑 AQUI: Se a pasta do seu projeto mudou, altere '/mapos/' para o novo nome (ex: '/os/')
+// 💡 DICA: Se o sistema estiver na RAIZ do domínio, use apenas '/'
+define('MAPOS_URL', $protocol . $host . '/mapos/'); 
+
+// ...
+```
+
+#### Por que alterar apenas isso?
+
+As outras constantes (`MAPOS_PATH` e `MAPOS_ROOT_PATH`) utilizam caminhos relativos ao sistema de arquivos (`dir/../../`), então elas se "auto-ajustam" independentemente do nome da pasta raiz, contanto que a estrutura interna de diretórios (`modulos/orcamentos`) seja mantida.
+
+A URL pública (`MAPOS_URL`), no entanto, depende de como o servidor web (Apache/Nginx) enxerga sua pasta, por isso precisa ser definida manualmente se fugir do padrão `/mapos/`.
+
+### 5. Como Acessar (Importante ⚠️)
 
 > [!TIP]
 > **Tudo pronto? Vamos lá!** 🚀
@@ -223,31 +249,7 @@ Embora o backup geral do Mapos já inclua todas as tabelas (inclusive as deste m
 Antes de atualizar o Mapos, por segurança, você pode copiar a pasta `modulos/orcamentos` para um local seguro. Assim, se algo der errado, basta copiar a pasta de volta.
 Graças à arquitetura modular, **o módulo não deve ser afetado por atualizações do sistema**, mas o seguro morreu de velho! 😉
 
-## ⚙️ Configuração (Importante)
-
-O arquivo principal de configuração é o `config_geral.php`. Ele tenta detectar automaticamente a maioria dos caminhos, mas **atenção especial** deve ser dada à URL raiz do sistema.
-
-### Renomeando a Pasta do Projeto
-
-Se você alterar o nome da pasta principal do projeto (ex: de `mapos` para `os`), você precisa ajustar a constante `MAPOS_URL` no arquivo `config_geral.php`.
-
-**Arquivo:** `config_geral.php`
-
-```php
-// ...
-
-// 🛑 AQUI: Se a pasta do seu projeto mudou, altere '/mapos/' para o novo nome (ex: '/os/')
-// 💡 DICA: Se o sistema estiver na RAIZ do domínio, use apenas '/'
-define('MAPOS_URL', $protocol . $host . '/mapos/'); 
-
-// ...
-```
-
-### Por que alterar apenas isso?
-
-As outras constantes (`MAPOS_PATH` e `MAPOS_ROOT_PATH`) utilizam caminhos relativos ao sistema de arquivos (`dir/../../`), então elas se "auto-ajustam" independentemente do nome da pasta raiz, contanto que a estrutura interna de diretórios (`modulos/orcamentos`) seja mantida.
-
-A URL pública (`MAPOS_URL`), no entanto, depende de como o servidor web (Apache/Nginx) enxerga sua pasta, por isso precisa ser definida manualmente se fugir do padrão `/mapos/`.
+---
 
 ---
 
